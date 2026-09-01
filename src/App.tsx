@@ -18,7 +18,10 @@ import { ModeBottomBar, ModeTabs } from './components/ModeNav';
 import { HelpBanner } from './components/HelpBanner';
 
 export default function App() {
-  const [activeMode, setActiveMode] = useState<TranslationMode>('sign-to-voice');
+  // Opens on Type → Sign deliberately: it needs no camera or microphone, so a
+  // first-time user sees the avatar working before the browser asks them to
+  // grant anything. The camera modes are one tap away.
+  const [activeMode, setActiveMode] = useState<TranslationMode>('text-to-sign');
   const [messages, setMessages] = useState<ConversationMessage[]>([
     {
       id: 'welcome-1',

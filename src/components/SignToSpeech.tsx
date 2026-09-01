@@ -40,7 +40,11 @@ export const SignToSpeech: React.FC<SignToSpeechProps> = ({ onNewMessage, autoSp
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  /** What the user asked for; `cameraActive` is whether a stream is actually live. */
+  const [cameraOn, setCameraOn] = useState(true);
   const [cameraActive, setCameraActive] = useState(false);
+  /** Bumped by "Try again" to re-run the camera effect when intent is unchanged. */
+  const [retryCount, setRetryCount] = useState(0);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
 
@@ -93,40 +97,62 @@ export const SignToSpeech: React.FC<SignToSpeechProps> = ({ onNewMessage, autoSp
   /* ---------------------------------------------------------------- *
    * Camera
    * ---------------------------------------------------------------- */
-  const stopCamera = useCallback(() => {
-    const video = videoRef.current;
-    if (video?.srcObject) {
-      (video.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
-      video.srcObject = null;
-    }
-    setCameraActive(false);
-  }, []);
-
-  const startCamera = useCallback(async () => {
-    setCameraError(null);
-    try {
-      stopCamera();
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        setCameraActive(true);
-      }
-    } catch (err) {
-      console.error('[synaera] camera access failed', err);
-      setCameraError('Camera access is blocked. Allow camera permission in your browser, then try again.');
-      setCameraActive(false);
-    }
-  }, [facingMode, stopCamera]);
-
+  /**
+   * The camera is driven declaratively from intent (`cameraOn`) rather than by
+   * imperative start/stop calls.
+   *
+   * The imperative version raced itself: `getUserMedia` is async, so under
+   * React's development double-mount the first call was still in flight when
+   * cleanup stopped its tracks, and the two attempts collided into a spurious
+   * "camera blocked" error. The same race hit any quick remount — switching
+   * modes away and back. Here a cancelled attempt stops the stream it opened
+   * and never touches state, so only the live attempt can win.
+   */
   useEffect(() => {
-    startCamera();
-    return stopCamera;
-    // startCamera changes with facingMode, which is exactly when we want to restart.
-  }, [startCamera, stopCamera]);
+    if (!cameraOn) {
+      setCameraActive(false);
+      return;
+    }
+
+    let cancelled = false;
+    let stream: MediaStream | null = null;
+
+    (async () => {
+      setCameraError(null);
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+
+        if (cancelled || !videoRef.current) return;
+
+        videoRef.current.srcObject = stream;
+        // play() rejects if the element is torn down mid-call; that is the
+        // cancelled path and not worth surfacing.
+        await videoRef.current.play().catch(() => {});
+        if (cancelled) return;
+
+        setCameraActive(true);
+      } catch (err) {
+        if (cancelled) return;
+        console.error('[synaera] camera access failed', err);
+        setCameraError('Camera access is blocked. Allow camera permission in your browser, then try again.');
+        setCameraActive(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      stream?.getTracks().forEach((t) => t.stop());
+      const video = videoRef.current;
+      if (video?.srcObject) {
+        (video.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
+        video.srcObject = null;
+      }
+      setCameraActive(false);
+    };
+  }, [cameraOn, facingMode, retryCount]);
 
   /* ---------------------------------------------------------------- *
    * Recognition
@@ -320,15 +346,15 @@ export const SignToSpeech: React.FC<SignToSpeechProps> = ({ onNewMessage, autoSp
             </button>
             <button
               id="toggle-camera-btn"
-              onClick={() => (cameraActive ? stopCamera() : startCamera())}
+              onClick={() => setCameraOn((on) => !on)}
               className={`p-2.5 rounded-xl border transition backdrop-blur-md shadow-lg ${
-                cameraActive
+                cameraOn
                   ? 'bg-blue-600 border-blue-400 text-white shadow-blue-500/30'
                   : 'bg-rose-900/80 border-rose-700 text-rose-200'
               }`}
-              title={cameraActive ? 'Turn camera off' : 'Turn camera on'}
+              title={cameraOn ? 'Turn camera off' : 'Turn camera on'}
             >
-              {cameraActive ? <Camera className="w-4 h-4" /> : <CameraOff className="w-4 h-4" />}
+              {cameraOn ? <Camera className="w-4 h-4" /> : <CameraOff className="w-4 h-4" />}
             </button>
           </div>
         </div>
@@ -398,7 +424,7 @@ export const SignToSpeech: React.FC<SignToSpeechProps> = ({ onNewMessage, autoSp
         </div>
 
         {/* Loading / error overlays */}
-        {cameraActive && status === 'loading' && (
+        {cameraOn && status === 'loading' && (
           <div className="absolute inset-0 bg-slate-950/80 z-30 flex flex-col items-center justify-center gap-3 backdrop-blur-sm">
             <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
             <p className="text-sm font-semibold text-white">Loading sign recognition…</p>
@@ -411,7 +437,13 @@ export const SignToSpeech: React.FC<SignToSpeechProps> = ({ onNewMessage, autoSp
             <ShieldAlert className="w-12 h-12 text-rose-500 mb-3" />
             <h3 className="text-base font-bold text-white mb-1">Camera access needed</h3>
             <p className="text-xs text-slate-400 max-w-sm mb-4">{cameraError}</p>
-            <button onClick={startCamera} className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold">
+            <button
+              onClick={() => {
+                setCameraOn(true);
+                setRetryCount((n) => n + 1);
+              }}
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold"
+            >
               Try again
             </button>
           </div>
