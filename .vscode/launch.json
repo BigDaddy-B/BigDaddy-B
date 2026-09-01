@@ -1,0 +1,32 @@
+{
+  // Press F5 to run Synaera-SA. "Run Synaera-SA" is the usual one: it starts
+  // the dev server and opens a browser attached to the debugger, so breakpoints
+  // work in both server.ts and the React components.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Server only",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Browser only (server must already be running)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run Synaera-SA",
+      "configurations": ["Server only", "Browser only (server must already be running)"],
+      "stopAll": true
+    }
+  ]
+}

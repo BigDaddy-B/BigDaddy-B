@@ -1,0 +1,33 @@
+{
+  // Ctrl+Shift+B runs the dev server. The rest are under
+  // Terminal -> Run Task...
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": [{ "regexp": "^$", "file": 1, "location": 2, "message": 3 }],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "running on http.*"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    { "label": "test", "type": "npm", "script": "test", "group": "test", "problemMatcher": [] },
+    { "label": "typecheck", "type": "npm", "script": "lint", "problemMatcher": ["$tsc"] },
+    { "label": "build", "type": "npm", "script": "build", "problemMatcher": [] },
+    {
+      "label": "download models",
+      "type": "npm",
+      "script": "setup:models",
+      "problemMatcher": []
+    }
+  ]
+}

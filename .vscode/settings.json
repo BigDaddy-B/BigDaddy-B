@@ -1,0 +1,12 @@
+{
+  // Use the TypeScript version in the project, not the one bundled with VS Code.
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": false,
+  "files.eol": "\n",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/public/mediapipe": true
+  },
+  "files.associations": { "*.css": "tailwindcss" }
+}

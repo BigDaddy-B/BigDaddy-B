@@ -77,6 +77,23 @@ npm run dev     # http://localhost:3000
 
 That's the whole setup. **No API key is required** — sign recognition, the avatar, speech-to-text and text-to-speech all run in the browser.
 
+### In VS Code
+
+Open the project folder (the one containing `package.json`), then:
+
+- **F5** — starts the server and opens a debugger-attached browser. Breakpoints
+  work in `server.ts` and in the React components.
+- **Ctrl+Shift+B** — starts the dev server on its own; Ctrl+click the printed
+  `http://localhost:3000`.
+- **Terminal → Run Task…** — `test`, `typecheck`, `build`, `download models`.
+
+VS Code will offer the Tailwind CSS extension on first open; it is worth
+accepting for class autocomplete.
+
+If the terminal says `Missing script: "dev"`, the folder you opened is one level
+too high — GitHub's ZIP wraps the project in a folder of the same name. Open the
+inner folder, the one where you can see `package.json` and `src/` side by side.
+
 ### Optional: AI assist
 
 Setting `GEMINI_API_KEY` in `.env.local` enables two optional extras: richer English→SASL gloss parsing, and an AI second opinion on signs outside the built-in vocabulary. Without it the app falls back to its own rule-based parser and on-device recogniser, and says so plainly rather than inventing an answer.

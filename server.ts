@@ -7,7 +7,8 @@ import { GoogleGenAI } from "@google/genai";
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+// Override with the PORT env var when 3000 is taken.
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: "25mb" }));
 
@@ -225,8 +226,20 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Synaera-SA server running on http://0.0.0.0:${PORT}`);
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Synaera-SA running on http://localhost:${PORT}`);
+  });
+
+  // Starting the app twice is easy to do — a stray terminal, or hitting Run in
+  // an editor while it is already up. Say so plainly instead of dumping an
+  // unhandled EADDRINUSE stack trace.
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code !== "EADDRINUSE") throw err;
+    console.error(`\nPort ${PORT} is already in use — Synaera-SA may already be running.`);
+    console.error(`Try opening http://localhost:${PORT} first.`);
+    console.error(`To use another port:  PORT=3001 npm run dev`);
+    console.error(`PowerShell:           $env:PORT=3001; npm run dev\n`);
+    process.exit(1);
   });
 }
 
