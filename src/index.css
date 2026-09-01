@@ -9,3 +9,32 @@
     background-size: 24px 24px;
   }
 }
+
+@layer utilities {
+  /* Idle life for the SASL avatar. Done in CSS so it costs no React renders
+     and keeps running while the signing animation is paused. */
+  @keyframes synaera-breathe {
+    0%, 100% { transform: translateY(0) scaleY(1); }
+    50%      { transform: translateY(0.8px) scaleY(1.006); }
+  }
+  @keyframes synaera-blink {
+    0%, 93%, 100% { transform: scaleY(1); }
+    96%           { transform: scaleY(0.06); }
+  }
+
+  .avatar-breathe {
+    transform-box: fill-box;
+    transform-origin: bottom center;
+    animation: synaera-breathe 4.5s ease-in-out infinite;
+  }
+  .avatar-blink {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: synaera-blink 6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .avatar-breathe,
+    .avatar-blink { animation: none; }
+  }
+}

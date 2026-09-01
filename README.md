@@ -143,7 +143,7 @@ src/
     SignToSpeech.tsx      camera → spoken English
     SpeechToSign.tsx      microphone → avatar
     TextToSign.tsx        typing → avatar
-    BlueMannequin.tsx     the Three.js half-body avatar
+    FlatMannequin.tsx     the 2D half-body SVG avatar
 scripts/
   setup-models.mjs        stages MediaPipe assets for offline use
   verify-recognizer.mjs   synthetic recognition tests

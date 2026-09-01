@@ -9,7 +9,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { Send, Sparkles, FastForward, Type, Eraser } from 'lucide-react';
-import { BlueMannequin } from './BlueMannequin';
+import { FlatMannequin } from './FlatMannequin';
 import { parseTextToSignTokens, REST_POSE } from '../lib/saslDictionary';
 import { BodyKeyframe, ConversationMessage, TranslationToken } from '../types/sasl';
 
@@ -67,7 +67,7 @@ export const TextToSign: React.FC<TextToSignProps> = ({
     <div id="text-to-sign-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
       {/* Avatar */}
       <div className="lg:col-span-7 flex flex-col h-[480px] lg:h-[600px]">
-        <BlueMannequin
+        <FlatMannequin
           keyframeQueue={keyframes}
           speedMultiplier={speedMultiplier}
           activeGloss={tokens[0]?.gloss ?? ''}

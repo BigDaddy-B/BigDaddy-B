@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Search, BookOpen, Sparkles, Volume2, Play, Flag, Heart } from 'lucide-react';
 import { SASL_DICTIONARY, getFingerspellingPose, REST_POSE } from '../lib/saslDictionary';
 import { SaslSign, BodyKeyframe } from '../types/sasl';
-import { BlueMannequin } from './BlueMannequin';
+import { FlatMannequin } from './FlatMannequin';
 
 interface SaslDictionaryModalProps {
   isOpen: boolean;
@@ -201,7 +201,7 @@ export const SaslDictionaryModal: React.FC<SaslDictionaryModalProps> = ({
             </div>
 
             <div className="h-[280px] w-full rounded-2xl overflow-hidden border border-white/10">
-              <BlueMannequin
+              <FlatMannequin
                 keyframeQueue={previewKeyframes}
                 speedMultiplier={1.0}
                 activeGloss={previewSign.gloss}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BlueMannequin } from './BlueMannequin';
+import { FlatMannequin } from './FlatMannequin';
 import { SignToSpeech } from './SignToSpeech';
 import { SpeechToSign } from './SpeechToSign';
 import { ConversationMessage } from '../types/sasl';

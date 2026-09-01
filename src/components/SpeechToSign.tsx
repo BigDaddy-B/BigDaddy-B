@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Send, Volume2, Sparkles, FastForward, RotateCcw, AlertCircle, CheckCircle2, Globe, Heart, MessageSquarePlus } from 'lucide-react';
-import { BlueMannequin } from './BlueMannequin';
+import { FlatMannequin } from './FlatMannequin';
 import { parseTextToSignTokens, lookupSaslSign, SASL_DICTIONARY, REST_POSE } from '../lib/saslDictionary';
 import { BodyKeyframe, TranslationToken, ConversationMessage } from '../types/sasl';
 
@@ -235,7 +235,7 @@ export const SpeechToSign: React.FC<SpeechToSignProps> = ({
     <div id="speech-to-sign-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
       {/* LEFT / TOP: 3D Blue Mannequin Avatar */}
       <div className="lg:col-span-7 flex flex-col h-[480px] lg:h-[600px]">
-        <BlueMannequin
+        <FlatMannequin
           keyframeQueue={currentKeyframes}
           speedMultiplier={speedMultiplier}
           activeGloss={activeGloss}
