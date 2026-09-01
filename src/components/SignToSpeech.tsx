@@ -14,9 +14,7 @@ import {
   RefreshCw,
   FlipHorizontal,
   ShieldAlert,
-  Hand,
   Loader2,
-  Lightbulb,
   ChevronRight,
 } from 'lucide-react';
 import { ConversationMessage } from '../types/sasl';
@@ -51,6 +49,7 @@ export const SignToSpeech: React.FC<SignToSpeechProps> = ({ onNewMessage, autoSp
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [recent, setRecent] = useState<Detection[]>([]);
   const [practiceTarget, setPracticeTarget] = useState<SignTemplate | null>(null);
+  const [panelTab, setPanelTab] = useState<'guide' | 'history'>('guide');
 
   /* ---------------------------------------------------------------- *
    * Speech synthesis
@@ -276,7 +275,7 @@ export const SignToSpeech: React.FC<SignToSpeechProps> = ({ onNewMessage, autoSp
   return (
     <div id="sign-to-speech-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
       {/* ---------------- Camera + live skeleton ---------------- */}
-      <div className="lg:col-span-7 flex flex-col h-[480px] lg:h-[600px] relative bg-black/40 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+      <div className="lg:col-span-7 flex flex-col h-[360px] sm:h-[460px] lg:h-[600px] relative bg-black/40 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 pointer-events-none z-0" />
 
         <video
@@ -428,136 +427,136 @@ export const SignToSpeech: React.FC<SignToSpeechProps> = ({ onNewMessage, autoSp
       </div>
 
       {/* ---------------- Right panel ---------------- */}
-      <div className="lg:col-span-5 flex flex-col gap-4 bg-white/5 rounded-3xl border border-white/10 p-6 shadow-2xl backdrop-blur-xl overflow-y-auto">
-        <div className="flex items-center justify-between pb-3 border-b border-white/10">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Spoken translation</h3>
-          <span className="px-2.5 py-0.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-[11px] font-mono text-cyan-300">
-            en-ZA
-          </span>
-        </div>
-
-        {/* Voice status */}
+      <div className="lg:col-span-5 flex flex-col gap-4 lg:h-[600px] min-h-0 bg-white/5 rounded-3xl border border-white/10 p-5 sm:p-6 shadow-2xl backdrop-blur-xl">
+        {/* Live status — the two things that are always worth seeing. */}
         <div
-          className={`p-4 rounded-2xl border transition-all ${
-            isSpeaking ? 'bg-blue-600/20 border-blue-400/40 shadow-lg shadow-blue-500/20' : 'bg-black/30 border-white/5'
+          className={`rounded-2xl border p-4 transition-all ${
+            isSpeaking ? 'bg-blue-600/20 border-blue-400/40 shadow-lg shadow-blue-500/20' : 'bg-black/30 border-white/10'
           }`}
         >
           <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-xl transition ${isSpeaking ? 'bg-blue-600 text-white' : 'bg-white/10 text-blue-400'}`}>
+            <div className={`rounded-xl p-2.5 transition ${isSpeaking ? 'bg-blue-600 text-white' : 'bg-white/10 text-blue-400'}`}>
               <Volume2 className={`w-5 h-5 ${isSpeaking ? 'animate-pulse' : ''}`} />
             </div>
-            <div>
-              <div className="text-xs font-semibold text-white">
-                {isSpeaking ? 'Speaking out loud…' : 'Voice ready'}
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-white truncate">
+                {isSpeaking ? 'Speaking out loud…' : lastSign ? lastSign.english : 'Nothing translated yet'}
               </div>
-              <div className="text-[11px] text-slate-400">South African English</div>
+              <div className="text-[11px] text-slate-400">
+                {lastSign ? `${lastSign.gloss} · ${Math.round(lastConfidence * 100)}% match` : 'South African English voice'}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Live tracking readout */}
-        <div className="p-3.5 bg-black/40 rounded-xl border border-white/10 space-y-2 text-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-slate-400 flex items-center gap-1.5">
-              <Hand className="w-3.5 h-3.5 text-blue-400" />
-              Hands tracked
-            </span>
-            <span className={handCount > 0 ? 'text-cyan-300 font-semibold' : 'text-slate-500'}>
-              {handCount}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-400">Movement</span>
-            <span className="text-blue-300 font-medium capitalize">{recognition.motion.type}</span>
-          </div>
-          {frame.features[0] && (
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">Position</span>
-              <span className="text-blue-300 font-medium capitalize">{frame.features[0].zone}</span>
-            </div>
-          )}
           {lastSign && (
-            <div className="flex items-start justify-between gap-3 pt-2 border-t border-white/10">
-              <span className="text-slate-400 shrink-0">SA context</span>
-              <span className="text-cyan-300/90 text-right text-[11px] leading-snug">{lastSign.saContext}</span>
-            </div>
+            <p className="mt-3 border-t border-white/10 pt-2.5 text-[11px] leading-snug text-cyan-300/90">
+              {lastSign.saContext}
+            </p>
           )}
         </div>
 
-        {/* Practice coach — tells the signer exactly how to form a sign */}
-        <div className="space-y-2">
-          <div className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center gap-1.5">
-            <Lightbulb className="w-3 h-3 text-blue-400" />
-            <span>Signs this app can read — tap for how to form it</span>
-          </div>
-
-          {practiceTarget && (
-            <div className="p-3 rounded-xl bg-blue-600/15 border border-blue-400/30 text-xs text-blue-100">
-              <div className="font-bold text-cyan-300 mb-0.5">{practiceTarget.gloss}</div>
-              <p className="leading-snug">{practiceTarget.tip}</p>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
-            {SIGN_TEMPLATES.map((sign) => {
-              const isCandidate = candidate?.template.id === sign.id;
-              return (
-                <button
-                  key={sign.id}
-                  id={`practice-sign-${sign.id}`}
-                  onClick={() => setPracticeTarget(practiceTarget?.id === sign.id ? null : sign)}
-                  className={`p-2.5 rounded-xl border text-left transition group ${
-                    isCandidate
-                      ? 'bg-cyan-500/20 border-cyan-400/50'
-                      : practiceTarget?.id === sign.id
-                        ? 'bg-blue-600/20 border-blue-400/40'
-                        : 'bg-white/5 hover:bg-white/10 border-white/10'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 flex items-center justify-between gap-1">
-                    <span className="truncate">{sign.gloss}</span>
-                    <ChevronRight className="w-3 h-3 opacity-50 shrink-0" />
-                  </div>
-                  <div className="text-[10px] text-slate-400 truncate">{sign.english}</div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* History */}
-        <div className="space-y-1.5">
-          <div className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center justify-between">
-            <span>Recent translations</span>
-            <span className="text-slate-400 font-mono">{recent.length}</span>
-          </div>
-
-          <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1">
-            {recent.length === 0 ? (
-              <div className="text-xs text-slate-500 italic p-2 text-center">
-                Signs read from your camera appear here and are spoken out loud.
+        {/* Compact tracking readout */}
+        <div className="grid grid-cols-3 gap-2 text-center">
+          {[
+            { label: 'Hands', value: String(handCount), lit: handCount > 0 },
+            { label: 'Movement', value: recognition.motion.type, lit: recognition.motion.type !== 'static' },
+            { label: 'Position', value: frame.features[0]?.zone ?? '—', lit: Boolean(frame.features[0]) },
+          ].map(({ label, value, lit }) => (
+            <div key={label} className="rounded-xl border border-white/10 bg-black/40 px-2 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-slate-500">{label}</div>
+              <div className={`text-xs font-semibold capitalize ${lit ? 'text-cyan-300' : 'text-slate-500'}`}>
+                {value}
               </div>
-            ) : (
-              recent.map((item, idx) => (
-                <div
-                  key={`${item.time}-${idx}`}
-                  className="flex items-center justify-between gap-2 p-2 rounded-lg bg-black/40 border border-white/10 text-xs"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-mono text-blue-400 font-bold shrink-0">{item.gloss}</span>
-                    <span className="text-slate-300 truncate">“{item.english}”</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-slate-500 shrink-0">{item.time}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs — the guide and the history used to stack into one long scroll. */}
+        <div className="flex gap-1 rounded-xl border border-white/10 bg-black/40 p-1">
+          {([
+            { id: 'guide', label: 'Signs I can read' },
+            { id: 'history', label: `History${recent.length ? ` (${recent.length})` : ''}` },
+          ] as const).map(({ id, label }) => (
+            <button
+              key={id}
+              id={`panel-tab-${id}`}
+              onClick={() => setPanelTab(id)}
+              aria-current={panelTab === id ? 'true' : undefined}
+              className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition ${
+                panelTab === id ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="min-h-[180px] flex-1 overflow-y-auto pr-1">
+          {panelTab === 'guide' ? (
+            <div className="space-y-2">
+              {practiceTarget && (
+                <div className="rounded-xl border border-blue-400/30 bg-blue-600/15 p-3 text-xs text-blue-100">
+                  <div className="mb-0.5 font-bold text-cyan-300">{practiceTarget.gloss}</div>
+                  <p className="leading-snug">{practiceTarget.tip}</p>
                 </div>
-              ))
-            )}
-          </div>
+              )}
+
+              <p className="text-[11px] text-slate-500">Tap a sign to see how to form it.</p>
+
+              <div className="grid grid-cols-2 gap-2">
+                {SIGN_TEMPLATES.map((sign) => {
+                  const isCandidate = candidate?.template.id === sign.id;
+                  const isOpen = practiceTarget?.id === sign.id;
+                  return (
+                    <button
+                      key={sign.id}
+                      id={`practice-sign-${sign.id}`}
+                      onClick={() => setPracticeTarget(isOpen ? null : sign)}
+                      className={`group rounded-xl border p-2.5 text-left transition ${
+                        isCandidate
+                          ? 'border-cyan-400/50 bg-cyan-500/20'
+                          : isOpen
+                            ? 'border-blue-400/40 bg-blue-600/20'
+                            : 'border-white/10 bg-white/5 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 text-xs font-bold text-slate-200 group-hover:text-cyan-300">
+                        <span className="truncate">{sign.gloss}</span>
+                        <ChevronRight className="w-3 h-3 shrink-0 opacity-50" />
+                      </div>
+                      <div className="truncate text-[10px] text-slate-400">{sign.english}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {recent.length === 0 ? (
+                <p className="p-4 text-center text-xs italic text-slate-500">
+                  Signs read from your camera appear here and are spoken out loud.
+                </p>
+              ) : (
+                recent.map((item, idx) => (
+                  <div
+                    key={`${item.time}-${idx}`}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/40 p-2.5 text-xs"
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="shrink-0 font-mono font-bold text-blue-400">{item.gloss}</span>
+                      <span className="truncate text-slate-300">“{item.english}”</span>
+                    </div>
+                    <span className="shrink-0 font-mono text-[10px] text-slate-500">{item.time}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         {assetSource && (
-          <p className="text-[10px] text-slate-600 text-center pt-1 border-t border-white/5">
-            Recognition runs on your device — video never leaves this browser.
-            {assetSource === 'cdn' && ' Models loaded from CDN.'}
+          <p className="border-t border-white/5 pt-2 text-center text-[10px] text-slate-600">
+            Runs on your device — video never leaves this browser.
           </p>
         )}
       </div>
