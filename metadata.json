@@ -1,0 +1,6 @@
+{
+  "name": "Synaera-SA: Accessible SASL Bridge",
+  "description": "South African Sign Language (SASL) dual-directional accessible translator connecting Deaf and hearing communities with live gesture recognition, spoken English voice, and a 3D blue mannequin avatar.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

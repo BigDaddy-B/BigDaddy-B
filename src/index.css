@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .bg-radial-immersive {
+    background: radial-gradient(circle at 50% 50%, #1e3a8a 0%, #020617 100%);
+  }
+  .bg-dot-grid {
+    background-image: radial-gradient(#3b82f6 0.75px, transparent 0.75px);
+    background-size: 24px 24px;
+  }
+}

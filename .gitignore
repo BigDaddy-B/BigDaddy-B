@@ -1,0 +1,11 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# MediaPipe runtime assets staged by scripts/setup-models.mjs (~20 MB, not source)
+public/mediapipe/
